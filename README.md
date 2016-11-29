@@ -1,3 +1,7 @@
+
+![Gradle-Mvn-Push](https://raw.githubusercontent.com/mobilejazz/metadata/master/images/banners/mobile-jazz-android-mvn-push.jpg)
+
+
 gradle-mvn-push
 ===============
 
@@ -83,6 +87,7 @@ SNAPSHOT_REPOSITORY_URL (defaults to Maven Central's snapshot server)
 ## License
 
     Copyright 2013 Chris Banes
+    Copyright 2016 Mobile Jazz
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
