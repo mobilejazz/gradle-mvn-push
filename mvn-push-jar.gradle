@@ -1,5 +1,6 @@
 /*
  * Copyright 2013 Chris Banes
+ * Copyright 2016 Mobile Jazz
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
  * limitations under the License.
  */
 
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 def isReleaseBuild() {
@@ -83,6 +84,38 @@ afterEvaluate { project ->
                         }
                     }
                 }
+
+                pom.whenConfigured { pom ->
+                    pom.dependencies.forEach { dep ->
+                        if (dep.getVersion() == "unspecified") {
+                            dep.setGroupId(GROUP)
+                            dep.setVersion(VERSION_NAME)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    task installArchives (type: Upload) {
+        description "Installs the artifacts to the local Maven repository."
+        configuration = configurations['archives']
+        repositories {
+            mavenDeployer {
+                pom.groupId = GROUP
+                pom.artifactId = POM_ARTIFACT_ID
+                pom.version = VERSION_NAME
+
+                pom.whenConfigured { pom ->
+                    pom.dependencies.forEach { dep ->
+                        if (dep.getVersion() == "unspecified") {
+                            dep.setGroupId(GROUP)
+                            dep.setVersion(VERSION_NAME)
+                        }
+                    }
+                }
+
+                repository url: "file://${System.properties['user.home']}/.m2/repository"
             }
         }
     }
@@ -92,23 +125,18 @@ afterEvaluate { project ->
         sign configurations.archives
     }
 
-    task androidJavadocs(type: Javadoc) {
-        source = android.sourceSets.main.java.srcDirs
-        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    }
-
-    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    task coreJavadocsJar(type: Jar, dependsOn: javadoc) {
         classifier = 'javadoc'
-        from androidJavadocs.destinationDir
+        from javadoc.destinationDir
     }
 
-    task androidSourcesJar(type: Jar) {
+    task coreSourcesJar(type: Jar) {
         classifier = 'sources'
-        from android.sourceSets.main.java.sourceFiles
+        from sourceSets.main.allSource
     }
 
     artifacts {
-        archives androidSourcesJar
-        archives androidJavadocsJar
+        archives coreSourcesJar
+        archives coreJavadocsJar
     }
 }
